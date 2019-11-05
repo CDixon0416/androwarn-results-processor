@@ -2,11 +2,17 @@ import re
 from bs4 import BeautifulSoup
 from bs4 import SoupStrainer
 
-span = SoupStrainer('body')
-soup = BeautifulSoup(open("com.google.android.apps.docs_1572456480.html"), features="html.parser", parse_only=span)
+only_body = SoupStrainer('body')
+androwarnHTML = BeautifulSoup(open("com.google.android.apps.docs_1572456480.html"), features="html.parser", parse_only=only_body)
 
-print(re.findall("This application reads the ISO country code equivalent for the SIM provider's country code", str(soup.find_all('h3'))))
-# print(soup.find_all('h2'))
+analysisResults = androwarnHTML.find_all('div', attrs={"class": "tab-pane"})
+resultIndex = 0
+for item in analysisResults:
+    if 3 < resultIndex < len(analysisResults)-17:
+        h2tag = re.findall("<h2>(.*?)<*/*h2>", str(item))
+        h3tag = re.findall("<h3>(.*?)<*/*h3>", str(item))
+        print(h2tag)
+        print(h3tag)
+    resultIndex = resultIndex + 1
 
-# Test another application to determine if the results are always laid out the same
-# Pull specific values and store into excel document
+# To Do Pull specific values and store into excel document
