@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 from bs4 import SoupStrainer
 
 only_body = SoupStrainer('body')
-androwarnHTML = BeautifulSoup(open("com.google.android.apps.docs_1572456480.html"), features="html.parser", parse_only=only_body)
+androwarnHTML = BeautifulSoup(open("com.google.android.apps.docs_1572456480.html"), features="html.parser",
+                              parse_only=only_body)
 
 analysisResults = androwarnHTML.find_all('div', attrs={"class": "tab-pane"})
 resultIndex = 0
