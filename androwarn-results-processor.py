@@ -38,8 +38,13 @@ excelH3Tag = ""
 titleFlag = 1
 
 for liTag in analysisResults:
+    if resultIndex == upperIndex-1:
+        titleFlag = 1
     if titleFlag == 1:
-        worksheet['A' + str(resultIndex+2)] = 'titleofapk'
+        if resultIndex == 0:
+            worksheet['A' + str(resultIndex+2)] = 'titleofapk'
+        else:
+            worksheet['A' + str(resultIndex-1)] = 'titleofapk'
         worksheet['A' + str(resultIndex+2)].alignment = Alignment(wrap_text=True, vertical='top')
         worksheet.column_dimensions['A'].width = 40
         titleFlag = 0
@@ -58,11 +63,9 @@ for liTag in analysisResults:
         worksheet['D' + str(resultIndex-2)].alignment = Alignment(wrap_text=True, vertical='top')
         worksheet.column_dimensions['D'].width = 40
         excelH3Tag = ""
-        titleFlag = 1
     resultIndex = resultIndex + 1
 
 workbook.save("Androwarn Results.xlsx")
 
-# To Do Pull specific values and store into excel document
 # To Do Add comments
 # To Do Add iteration through all files
