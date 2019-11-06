@@ -67,5 +67,6 @@ for liTag in analysisResults:
 
 workbook.save("Androwarn Results.xlsx")
 
+# To Do fix headers for excel document
 # To Do Add comments
-# To Do Add iteration through all files
+# To Do Add iteration through all files with .html in given folder
