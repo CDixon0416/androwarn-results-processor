@@ -36,6 +36,7 @@ analysisResults = androwarnHTML.find_all('div', attrs={"class": "tab-pane"})
 resultIndex = 0
 excelH3Tag = ""
 titleFlag = 1
+
 for liTag in analysisResults:
     if titleFlag == 1:
         worksheet['A' + str(resultIndex+2)] = 'titleofapk'
