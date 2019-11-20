@@ -1,72 +1,79 @@
+# For parsing html
+import os
 import re
 from bs4 import BeautifulSoup
 from bs4 import SoupStrainer
+# For storing results
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.styles import Font
+from openpyxl.utils import get_column_letter
 
+# Create the Workbook for storage later
 workbook = Workbook()
 worksheet = workbook.active
 worksheet.title = "Androwarn"
-headers = ['Project Name', 'Number of Permissions', 'Permissions', 'Number of Activities', 'Activities']
-worksheet.append(headers)
-worksheet['A1'].font = Font(bold=True, italic=True)
-worksheet['B1'].font = Font(bold=True, italic=True)
-worksheet['C1'].font = Font(bold=True, italic=True)
-worksheet['D1'].font = Font(bold=True, italic=True)
 
+# Strainer for finding html <body> tag
 only_body = SoupStrainer('body')
-androwarnHTML = BeautifulSoup(open("com.google.android.apps.docs_1572456480.html"), features="html.parser",
-                              parse_only=only_body)
+# Move to listed directory of html files
+os.chdir('C:/Users/Casey Dixon/PycharmProjects/androwarn-results-processor/html files')
+# Set intial position in excel document
+row = 1
+column = 1
+for subdirectory, directory, files in os.walk(os.getcwd()):
+    for file in files:
+        if file.endswith(".html"):
+            androwarnHTML = BeautifulSoup(open(file), features="html.parser",
+                                          parse_only=only_body)
 
-resultList = androwarnHTML.find_all('ul', attrs={"class": "nav nav-list"})
-liList = re.findall("<li.*", str(resultList))
-iteration = 0
-lowerBound = 0
-upperBound = 0
-for liTag in liList:
-    iteration = iteration + 1
-    if liTag == '<li class="nav-header">Analysis Results</li>':
-        lowerBound = iteration
-    if liTag == '<li class="nav-header">Apk File</li>':
-        upperBound = iteration
-upperIndex = upperBound - lowerBound + 3
+            # Find the number of results we need to create
+            resultList = androwarnHTML.find_all('ul', attrs={"class": "nav nav-list"})
+            liList = re.findall("<li.*", str(resultList))
+            iteration = 0
+            lowerBound = 0
+            upperBound = 0
+            # Determine the number of results in the html document from the security section
+            for liTag in liList:
+                iteration = iteration + 1
+                if liTag == '<li class="nav-header">Analysis Results</li>':
+                    lowerBound = iteration
+                if liTag == '<li class="nav-header">Apk File</li>':
+                    upperBound = iteration
+            upperIndex = upperBound - lowerBound + 3
 
-analysisResults = androwarnHTML.find_all('div', attrs={"class": "tab-pane"})
-resultIndex = 0
-excelH3Tag = ""
-titleFlag = 1
+            # Find the name of our apk for storing data under
+            titleOfApk = androwarnHTML.find_all('div', attrs={"id": "file-name"})
+            titleOfApk = re.findall("<h3>(.*?)<*/*h3>", str(titleOfApk))
+            worksheet.cell(row=row, column=column).value = titleOfApk[0]
+            columnLetter = get_column_letter(column)
+            worksheet.column_dimensions[columnLetter].width = 50
+            column = column + 1
 
-for liTag in analysisResults:
-    if resultIndex == upperIndex-1:
-        titleFlag = 1
-    if titleFlag == 1:
-        if resultIndex == 0:
-            worksheet['A' + str(resultIndex+2)] = 'titleofapk'
-        else:
-            worksheet['A' + str(resultIndex-1)] = 'titleofapk'
-        worksheet['A' + str(resultIndex+2)].alignment = Alignment(wrap_text=True, vertical='top')
-        worksheet.column_dimensions['A'].width = 40
-        titleFlag = 0
-    if 3 < resultIndex < upperIndex:
-        h2tag = re.findall("<h2>(.*?)<*/*h2>", str(liTag))
-        h3tag = re.findall("<h3>(.*?)<*/*h3>", str(liTag))
-        worksheet['B' + str(resultIndex-2)] = h2tag[0]
-        worksheet['B' + str(resultIndex-2)].alignment = Alignment(wrap_text=True, vertical='top')
-        worksheet.column_dimensions['B'].width = 40
-        worksheet['C' + str(resultIndex-2)] = len(h3tag)
-        worksheet['C' + str(resultIndex-2)].alignment = Alignment(wrap_text=True, vertical='top')
-        worksheet.column_dimensions['C'].width = 40
-        for i in range(len(h3tag)):
-            excelH3Tag = excelH3Tag + h3tag[i] + '\n'
-        worksheet['D' + str(resultIndex-2)] = excelH3Tag
-        worksheet['D' + str(resultIndex-2)].alignment = Alignment(wrap_text=True, vertical='top')
-        worksheet.column_dimensions['D'].width = 40
-        excelH3Tag = ""
-    resultIndex = resultIndex + 1
-
-workbook.save("Androwarn Results.xlsx")
-
-# To Do fix headers for excel document
-# To Do Add comments
-# To Do Add iteration through all files with .html in given folder
+            # Create intial result list based on div tags
+            analysisResults = androwarnHTML.find_all('div', attrs={"class": "tab-pane"})
+            resultIndex = 0
+            excelH3Tag = ""
+            # Main process for writing to each row
+            for liTag in analysisResults:
+                if 3 < resultIndex < upperIndex:
+                    h2tag = re.findall("<h2>(.*?)<*/*h2>", str(liTag))
+                    h3tag = re.findall("<h3>(.*?)<*/*h3>", str(liTag))
+                    worksheet.cell(row=row, column=column).value = h2tag[0]
+                    columnLetter = get_column_letter(column)
+                    worksheet.column_dimensions[columnLetter].width = 30
+                    column = column + 1
+                    worksheet.cell(row=row, column=column).value = len(h3tag)
+                    columnLetter = get_column_letter(column)
+                    worksheet.column_dimensions[columnLetter].width = 5
+                    column = column + 1
+                    for i in range(len(h3tag)):
+                        excelH3Tag = excelH3Tag + h3tag[i] + '\n'
+                    worksheet.cell(row=row, column=column).value = excelH3Tag
+                    columnLetter = get_column_letter(column)
+                    worksheet.column_dimensions[columnLetter].width = 10
+                    column = column + 1
+                    excelH3Tag = ""
+                resultIndex = resultIndex + 1
+            # Increment row reset column for next result
+            row = row + 1
+            column = 1
+            workbook.save("Androwarn Results.xlsx")
