@@ -94,7 +94,5 @@ for subdirectory, directory, files in os.walk(os.getcwd()):
                 workbook.save("Androwarn Results.xlsx")
 
                 count = count + 1
-                if count == 10:
-                    break;
             except:
                 print(file)
