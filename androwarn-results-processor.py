@@ -15,7 +15,7 @@ worksheet.title = "Androwarn"
 # Strainer for finding html <body> tag
 only_body = SoupStrainer('body')
 # Move to listed directory of html files
-os.chdir('C:/Users/Casey Dixon/PycharmProjects/androwarn-results-processor/html files')
+os.chdir('F/Test')
 # Set intial position in excel document
 row = 1
 column = 1
